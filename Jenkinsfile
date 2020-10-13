@@ -4,15 +4,15 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
-        stage('Build') { 
+        stage('Build') {
             agent {
                 docker {
-                    image 'python:2-alpine' 
+                    image 'python:2-alpine'
                 }
             }
             steps {
-                sh 'python -m py_compile sources/add2vals.py sources/calc.py' 
-                stash(name: 'compiled-results', includes: 'sources/*.py*') 
+                sh 'python -m py_compile sources/add2vals.py sources/calc.py'
+                stash(name: 'compiled-results', includes: 'sources/*.py*')
             }
         }
         stage('Test') {
@@ -33,13 +33,13 @@ pipeline {
         stage('Deliver') { 
             agent any
             environment { 
-                VOLUME = '$(pwd)/sources'
+                VOLUME = '$(pwd)/sources:/src'
                 IMAGE = 'cdrx/pyinstaller-linux:python2'
             }
             steps {
                 dir(path: env.BUILD_ID) { 
                     unstash(name: 'compiled-results') 
-                    sh "docker run --rm -v ${VOLUME} ${IMAGE} 'pyinstaller -F sources/add2vals.py'" 
+                    sh "docker run --rm -v ${VOLUME} ${IMAGE} 'pyinstaller -F add2vals.py'" 
                 }
             }
             post {
